@@ -1,0 +1,13 @@
+(ns test-case)
+
+;; A comment
+
+(defn bar []
+  (when false 2 1))
+
+
+(defn baz
+  "Doc string"
+  [z b]
+  (str (when false b))
+  (if z 1 2))
