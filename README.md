@@ -1,25 +1,22 @@
 # kibit-replace
 
-A Leiningen plugin to do many wonderful things.
+A Leiningen plugin to automatically apply [kibit](https://github.com/jonase/kibit) suggestions.
 
 ## Usage
 
-FIXME: Use this for user-level plugins:
-
-Put `[kibit-replace "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your `:user`
-profile.
-
-FIXME: Use this for project-level plugins:
-
 Put `[kibit-replace "0.1.0-SNAPSHOT"]` into the `:plugins` vector of your project.clj.
 
-FIXME: and add an example usage that actually makes sense:
+    $ lein kibit-replace # to apply all suggestions, or
+    $ lein kitit-replace --interactive
+      Would you like to replace
+        (+ 1 a)
+       with
+        (inc a)
+      in your_code.clj:42? [yes/no]
 
-    $ lein kibit-replace
 
 ## License
 
-Copyright © 2016 FIXME
+Copyright © 2016 James Brennan
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License either version 1.0

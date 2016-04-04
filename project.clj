@@ -1,6 +1,6 @@
 (defproject jpb/kibit-replace "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A Leiningen plugin to automatically apply kibit suggestions"
+  :url "https://github.com/jpb/kibit-replace"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[jonase/kibit "0.1.2"]
