@@ -1,5 +1,6 @@
 (ns kibit-replace.driver
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [kibit.driver :refer [find-clojure-sources-in-dir]]
             [kibit.rules :refer [all-rules]]
             [kibit.check :as check]
@@ -26,7 +27,7 @@
   "Create a yes/no prompt using the given message.
   From leiningen.ancient.console."
   [& msg]
-  (let [msg (str (apply str msg) " [yes/no] ")]
+  (let [msg (str (str/join msg) " [yes/no] ")]
     (locking *out*
       (loop [i 0]
         (when (= (mod i 4) 2)
@@ -69,15 +70,14 @@
           (if (or (and interactive? (prompt-check check filename))
                   true)
             (let [new-bytes (-> existing-form
-                                (z/replace (with-meta
-                                             (:alt check)
-                                             (dissoc (meta (:alt check))
-                                                     :line
-                                                     :column)))
+                                (z/replace (vary-meta (:alt check)
+                                                      dissoc
+                                                      :line
+                                                      :column))
                                 z/root-string
                                 .getBytes)]
               (recur new-bytes check-fn ignore-check-count interactive? filename))
-            (recur bytes check-fn (+ ignore-check-count 1) interactive? filename))
+            (recur bytes check-fn (inc ignore-check-count) interactive? filename))
           (throw (Exception. (str "Unable to find form for " check " in " code-forms))))))))
 
 (defn check-file
