@@ -41,13 +41,22 @@
             ("no" "n")  false
             (recur (inc i))))))))
 
-(defn prompt-check [{:keys [line expr alt]} filename]
-  (prompt (with-out-str
-            (println "Do you want to replace")
-            (reporters/pprint-code expr)
-            (println " with")
-            (reporters/pprint-code alt)
-            (printf "in %s:%s?" filename line))))
+(defn prompt-check [{:keys [line expr alt]} filename interactive?]
+  (if interactive?
+    (prompt (with-out-str
+              (println "Do you want to replace")
+              (reporters/pprint-code expr)
+              (println " with")
+              (reporters/pprint-code alt)
+              (print (format "in %s:%s?" filename line))))
+    (do
+      (println "Replacing")
+      (reporters/pprint-code expr)
+      (println " with")
+      (reporters/pprint-code alt)
+      (println (format "in %s:%s" filename line))
+
+      true)))
 
 (defn find-and-replace-failed-checks
   "Recursivly call `check-fn` (a `check/check-reader`), replacing the form at
@@ -67,8 +76,7 @@
                                                    {:row (:line check)
                                                     :col (:column check)})))]
         (if existing-form
-          (if (or (and interactive? (prompt-check check filename))
-                  true)
+          (if (prompt-check check filename interactive?)
             (let [new-bytes (-> existing-form
                                 (z/replace (vary-meta (:alt check)
                                                       dissoc
