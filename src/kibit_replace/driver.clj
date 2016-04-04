@@ -8,7 +8,9 @@
             [clojure.tools.cli :refer [cli]])
   (:import [java.io File]))
 
-(def cli-specs [])
+(def cli-specs [["-i" "--interactive"
+                 "Run in interactive mode"
+                 :flag true]])
 
 (def ^:private default-args
   {:rules      all-rules
@@ -20,12 +22,38 @@
   (when (resolve '*default-data-reader-fn*)
     {(resolve '*default-data-reader-fn*) (fn [tag val] val)}))
 
+(defn prompt
+  "Create a yes/no prompt using the given message.
+  From leiningen.ancient.console."
+  [& msg]
+  (let [msg (str (apply str msg) " [yes/no] ")]
+    (locking *out*
+      (loop [i 0]
+        (when (= (mod i 4) 2)
+          (println "*** please type in one of 'yes'/'y' or 'no'/'n' ***"))
+        (print msg)
+        (flush)
+        (let [r (or (read-line) "")
+              r (.toLowerCase ^String r)]
+          (case r
+            ("yes" "y") true
+            ("no" "n")  false
+            (recur (inc i))))))))
+
+(defn prompt-check [{:keys [line expr alt]} filename]
+  (prompt (with-out-str
+            (println "Do you want to replace")
+            (reporters/pprint-code expr)
+            (println " with")
+            (reporters/pprint-code alt)
+            (printf "in %s:%s?" filename line))))
+
 (defn find-and-replace-failed-checks
   "Recursivly call `check-fn` (a `check/check-reader`), replacing the form at
   `:line` and `:column` with the form in `:alt`, until no checks are returned."
-  [bytes check-fn]
+  [bytes check-fn ignore-check-count interactive? filename]
   (let [checks (with-open [reader (io/reader bytes)]
-                 (check-fn reader))]
+                 (drop ignore-check-count (doall (check-fn reader))))]
     (if (empty? checks)
       bytes
       ;; else
@@ -38,15 +66,22 @@
                                                    {:row (:line check)
                                                     :col (:column check)})))]
         (if existing-form
-          (let [new-bytes (-> existing-form
-                              (z/replace (:alt check))
-                              z/root-string
-                              .getBytes)]
-            (recur new-bytes check-fn))
+          (if (or (and interactive? (prompt-check check filename))
+                  true)
+            (let [new-bytes (-> existing-form
+                                (z/replace (with-meta
+                                             (:alt check)
+                                             (dissoc (meta (:alt check))
+                                                     :line
+                                                     :column)))
+                                z/root-string
+                                .getBytes)]
+              (recur new-bytes check-fn ignore-check-count interactive? filename))
+            (recur bytes check-fn (+ ignore-check-count 1) interactive? filename))
           (throw (Exception. (str "Unable to find form for " check " in " code-forms))))))))
 
 (defn check-file
-  [source-file & kw-opts]
+  [source-file interactive? & kw-opts]
   (let [{:keys [rules guard resolution init-ns]
          :as options}
         (merge default-args
@@ -59,12 +94,23 @@
                                            :resolution resolution
                                            :init-ns init-ns))
             source-bytes (.getBytes (slurp source-file))
-            replaced-bytes (find-and-replace-failed-checks source-bytes check-fn)]
+            replaced-bytes (find-and-replace-failed-checks source-bytes
+                                                           check-fn
+                                                           0
+                                                           interactive?
+                                                           source-file)]
         (String. replaced-bytes)))))
 
 (defn run [source-paths rules & args]
-  (let [[options file-args usage-text] (apply (partial cli args) cli-specs)
+  (let [[options file-args] (apply (partial cli args) cli-specs)
         source-files (mapcat (comp find-clojure-sources-in-dir io/file)
                              source-paths)]
     (doseq [file source-files]
-      (println (check-file file :rules (or rules all-rules))))))
+      (spit file
+            (check-file file (:interactive options) :rules (or rules all-rules))))))
+
+(defn external-run
+  [source-paths rules & args]
+  (if (zero? (count (apply run source-paths rules args)))
+    (System/exit 0)
+    (System/exit 1)))
