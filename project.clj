@@ -1,4 +1,4 @@
-(defproject jpb/kibit-replace "0.1.0-SNAPSHOT"
+(defproject jpb/kibit-replace "0.1.0"
   :description "A Leiningen plugin to automatically apply kibit suggestions"
   :url "https://github.com/jpb/kibit-replace"
   :license {:name "Eclipse Public License"

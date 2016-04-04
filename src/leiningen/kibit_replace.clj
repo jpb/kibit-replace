@@ -7,7 +7,7 @@
 (defn ^:no-project-needed kibit-replace
   [project & args]
   (let [src-paths (get-in project [:kibit :source-paths] ["rules"])
-        kibit-project `{:dependencies [[jpb/kibit-replace "0.1.0-SNAPSHOT"]]
+        kibit-project `{:dependencies [[jpb/kibit-replace "0.1.0"]]
                         :source-paths ~src-paths}
         paths (filter some? (concat
                              (:source-paths project)
