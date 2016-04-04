@@ -44,7 +44,7 @@
 (defn prompt-check [{:keys [line expr alt]} filename interactive?]
   (if interactive?
     (prompt (with-out-str
-              (println "Do you want to replace")
+              (println "Would you like to replace")
               (reporters/pprint-code expr)
               (println " with")
               (reporters/pprint-code alt)
