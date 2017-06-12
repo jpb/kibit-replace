@@ -1,3 +1,5 @@
+:warning: This is now [available in Kibit](https://github.com/jonase/kibit#automatically-replacing-suggestions-in-source-file) 0.1.5+. Use `kibit replace` instead of this plugin. :warning: 
+
 # kibit-replace
 
 A Leiningen plugin to automatically apply [kibit](https://github.com/jonase/kibit) suggestions.
