@@ -6,7 +6,7 @@ A Leiningen plugin to automatically apply [kibit](https://github.com/jonase/kibi
 
 ## Usage
 
-Put `[kibit-replace "0.1.0"]` into the `:plugins` vector of your project.clj.
+Put `[jpb/kibit-replace "0.1.0"]` into the `:plugins` vector of your project.clj.
 
     $ lein kibit-replace # to apply all suggestions, or
     $ lein kibit-replace --interactive
